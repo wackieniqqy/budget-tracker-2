@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Advanced Personal Budget Tracker</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -56,12 +55,6 @@
         .negative {
             color: red;
         }
-        .chart-container {
-            margin-top: 30px;
-            width: 100%;
-            max-width: 600px;
-            margin: 0 auto;
-        }
     </style>
 </head>
 <body>
@@ -111,10 +104,6 @@
                 <!-- Transactions will appear here -->
             </tbody>
         </table>
-
-        <div class="chart-container">
-            <canvas id="categoryChart"></canvas>
-        </div>
     </div>
 
     <script>
@@ -127,65 +116,6 @@
             balanceElement.className = balance >= 0 ? 'positive' : 'negative';
         }
 
-        function updateCategoryChart() {
-            const categoryData = transactions.reduce((acc, transaction) => {
-                if (!acc[transaction.category]) {
-                    acc[transaction.category] = 0;
-                }
-                acc[transaction.category] += transaction.amount;
-                return acc;
-            }, {});
-
-            const labels = Object.keys(categoryData);
-            const data = Object.values(categoryData);
-
-            const ctx = document.getElementById('categoryChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'bar', // Changed to bar chart
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Amount ($)',
-                        data: data,
-                        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4CAF50', '#FF5733', '#C70039'],
-                        borderColor: '#ccc',
-                        borderWidth: 1,
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        x: {
-                            title: {
-                                display: true,
-                                text: 'Category'
-                            }
-                        },
-                        y: {
-                            title: {
-                                display: true,
-                                text: 'Amount ($)'
-                            },
-                            beginAtZero: true
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            display: true,
-                            position: 'top'
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(tooltipItem) {
-                                    return tooltipItem.label + ': $' + tooltipItem.raw.toFixed(2);
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
         function addTransaction() {
             const description = document.getElementById('description').value;
             const amount = parseFloat(document.getElementById('amount').value);
@@ -194,6 +124,11 @@
 
             if (!description || isNaN(amount) || !date) {
                 alert("Please provide valid input!");
+                return;
+            }
+
+            if (category !== "Income") {
+                alert("Only 'Income' transactions can be added.");
                 return;
             }
 
@@ -223,9 +158,8 @@
             document.getElementById('amount').value = '';
             document.getElementById('date').value = '';
 
-            // Update balance and chart
+            // Update balance
             updateBalance();
-            updateCategoryChart();
         }
 
         function deleteTransaction(index) {
@@ -238,7 +172,6 @@
             tableBody.deleteRow(index);
 
             updateBalance();
-            updateCategoryChart();
         }
 
         function editTransaction(index) {
